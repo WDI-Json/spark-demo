@@ -114,7 +114,9 @@ kubectl describe pod -n spark-demo -l app=spark-thrift
 k9s -n spark-demo                    # TUI
 ```
 
-Per-deployment uitleg staat in `docs/`:
+Architectuur in drie zoom-niveaus (C4-model): [docs/architecture.md](docs/architecture.md).
+
+Per-deployment uitleg in `docs/`:
 
 | Component | Doc |
 |---|---|
