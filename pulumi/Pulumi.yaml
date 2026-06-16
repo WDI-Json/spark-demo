@@ -1,0 +1,6 @@
+name: spark-demo
+runtime:
+  name: python
+  options:
+    virtualenv: ../.venv
+description: Local Spark + Delta cluster (devsetup/Spark-demo)

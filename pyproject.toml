@@ -1,0 +1,17 @@
+[project]
+name = "spark-demo"
+version = "0.0.0"
+description = "Local Spark + Delta Lake cluster with Pulumi, Tilt and dbt"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "pulumi>=3.140,<4",
+    "pulumi-kubernetes>=4.20,<5",
+    "dbt-spark[PyHive]>=1.9,<2",
+    "pyspark[connect]==4.0.3",
+    "delta-spark==4.0.0",
+    "ipykernel>=6.29",
+    "pandas>=2.2",
+]
+
+[tool.uv]
+package = false

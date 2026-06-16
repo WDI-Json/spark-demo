@@ -1,0 +1,7 @@
+config:
+  spark-demo:namespace: spark-demo
+  spark-demo:sparkImage: apache/spark:4.0.3
+  spark-demo:workerReplicas: "1"
+  spark-demo:workerMemory: 2g
+  spark-demo:workerCores: "2"
+encryptionsalt: v1:ogZGNztkAw8=:v1:iVzeELTP6EQzE3zx:zoccPqfBTtPRL3j/3MjTKsDTIVbEfw==

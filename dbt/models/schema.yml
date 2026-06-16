@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: "Cleaned orders staging table"
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        tests:
+          - not_null
+
+  - name: revenue_per_day
+    description: "Daily revenue aggregation"
+    columns:
+      - name: order_date
+        tests:
+          - unique
+          - not_null
+      - name: revenue
+        tests:
+          - not_null
