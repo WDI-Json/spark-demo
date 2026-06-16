@@ -2,6 +2,8 @@
 
 Lokaal Spark + Delta Lake-cluster, opgezet met **Pulumi** (IaC) en **Tilt** (orchestratie) op **minikube**, plus een mini **dbt**-project en een notebook via **Spark Connect**. Bedoeld om Databricks-concepten lokaal te oefenen.
 
+> Nieuw in deze stack? Begin bij [INTRODUCTION.md](INTRODUCTION.md) — een uitleg voor data engineers over wat dit project probeert te bereiken en hoe de stukjes in elkaar passen.
+
 ## Wat dit wel/niet is
 
 > **Dit is geen Databricks.** Er is geen open-source Databricks-runtime; we draaien gewone Apache Spark. Wat je hier oefent is overdraagbaar, maar Databricks-specifieke lagen ontbreken.
