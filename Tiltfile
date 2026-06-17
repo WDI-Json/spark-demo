@@ -7,7 +7,15 @@ allow_k8s_contexts('minikube')
 # 00 — prereqs
 local_resource(
     'cluster-check',
-    cmd="kubectl config current-context | grep -q '^minikube$' && kubectl get nodes >/dev/null",
+    cmd="""
+set -eu
+ctx="$(kubectl config current-context 2>/dev/null || true)"
+if [ "$ctx" != "minikube" ]; then
+  echo "cluster-check: kubectl context must be 'minikube' (current: '${ctx:-<unset>}'). Run 'minikube start' and try again." >&2
+  exit 1
+fi
+kubectl get nodes >/dev/null
+""",
     labels=['00-prereqs'],
 )
 
@@ -21,7 +29,7 @@ local_resource(
 # 10 — infra
 local_resource(
     'pulumi-stack',
-    cmd='cd pulumi && (uv run pulumi stack select dev 2>/dev/null || uv run pulumi stack init dev)',
+    cmd='cd pulumi && uv run pulumi login --local && (uv run pulumi stack select dev 2>/dev/null || uv run pulumi stack init dev)',
     resource_deps=['uv-sync'],
     labels=['10-infra'],
 )
