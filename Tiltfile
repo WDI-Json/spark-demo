@@ -29,7 +29,7 @@ local_resource(
 # 10 — infra
 local_resource(
     'pulumi-stack',
-    cmd='cd pulumi && (uv run pulumi stack select dev 2>/dev/null || uv run pulumi stack init dev)',
+    cmd='cd pulumi && uv run pulumi login --local >/dev/null && (uv run pulumi stack select dev 2>/dev/null || uv run pulumi stack init dev)',
     resource_deps=['uv-sync'],
     labels=['10-infra'],
 )
