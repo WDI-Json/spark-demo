@@ -7,12 +7,15 @@ allow_k8s_contexts('minikube')
 # 00 — prereqs
 local_resource(
     'cluster-check',
-    cmd="""ctx="$(kubectl config current-context 2>/dev/null || true)";
+    cmd="""
+set -eu
+ctx="$(kubectl config current-context 2>/dev/null || true)"
 if [ "$ctx" != "minikube" ]; then
-  echo "cluster-check: kubectl context must be 'minikube' (current: '${ctx:-<unset>}'). Run 'minikube start' and try again." >&2;
-  exit 1;
-fi;
-kubectl get nodes >/dev/null""",
+  echo "cluster-check: kubectl context must be 'minikube' (current: '${ctx:-<unset>}'). Run 'minikube start' and try again." >&2
+  exit 1
+fi
+kubectl get nodes >/dev/null
+""",
     labels=['00-prereqs'],
 )
 
