@@ -161,11 +161,26 @@ minikube stop -p spark-demo                      # of: minikube delete -p spark-
 > ```
 >
 > Voor een **clean restart** is het hele profiel weggooien het zekerst — dan kan er
-> niets verweesd achterblijven:
+> aan *cluster*-kant niets verweesd achterblijven:
 >
 > ```sh
 > minikube delete -p spark-demo        # wist de hele spark-demo cluster
 > ```
+>
+> **Let op:** als je het profiel weggooit *zonder* eerst `pulumi destroy` te draaien,
+> blijft de Pulumi-state de (nu verdwenen) resources nog "kennen". Een volgende
+> `tilt up` denkt dan dat alles al bestaat en maakt niets opnieuw aan. Reset daarom
+> ook de stack-state:
+>
+> ```sh
+> cd pulumi
+> PULUMI_CONFIG_PASSPHRASE="" uv run pulumi stack rm dev --yes --force
+> git checkout -- Pulumi.dev.yaml          # stack rm verwijdert dit config-bestand
+> PULUMI_CONFIG_PASSPHRASE="" uv run pulumi stack init dev   # lege state, klaar voor tilt up
+> ```
+>
+> Draai je netjes `pulumi destroy` vóór `minikube delete` (zoals hierboven), dan is
+> deze reset niet nodig — dan loopt state en cluster gelijk leeg.
 
 ## Resources & geheugen
 
