@@ -66,9 +66,13 @@ cd pulumi && uv run pulumi stack init dev && cd ..
 
 ```sh
 minikube start    # als hij nog niet draait
-export PULUMI_CONFIG_PASSPHRASE=""
 tilt up           # browser opent http://localhost:10350
 ```
+
+> `cluster-check` wacht zelf tot minikube draait en zet de kubectl-context goed
+> (ook als je default-context `docker-desktop`/`rancher-desktop` is). De
+> `PULUMI_CONFIG_PASSPHRASE=""` wordt door Tilt zelf gezet — geen handmatige export
+> meer nodig voor `tilt up`.
 
 Wacht tot alle resources groen zijn in de Tilt-UI:
 
