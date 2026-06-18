@@ -53,7 +53,7 @@ cd ~/GITHUB/spark-demo
 
 uv sync                                       # creëert .venv/ met alle deps
 
-minikube start --memory=5g --cpus=2           # K8s cluster lokaal
+minikube start -p spark-demo --memory=5g --cpus=2   # eigen 'spark-demo' cluster
                                               # (meer mag, mits je docker-daemon
                                               # voldoende resources heeft)
 
@@ -65,20 +65,25 @@ cd pulumi && uv run pulumi stack init dev && cd ..
 ## Dagelijks gebruik
 
 ```sh
-minikube start    # als hij nog niet draait
-tilt up           # browser opent http://localhost:10350
+minikube start -p spark-demo    # als hij nog niet draait
+tilt up                         # browser opent http://localhost:10350
 ```
 
-> `cluster-check` wacht zelf tot minikube draait en zet de kubectl-context goed
-> (ook als je default-context `docker-desktop`/`rancher-desktop` is). De
-> `PULUMI_CONFIG_PASSPHRASE=""` wordt door Tilt zelf gezet — geen handmatige export
-> meer nodig voor `tilt up`.
+> Deze demo draait op een **eigen minikube-profiel** `spark-demo` (een aparte
+> cluster), niet op het default `minikube`-profiel. Zo heten de cluster, de
+> kube-context én de namespace allemaal `spark-demo` en staat alles los van ander
+> minikube/rancher-desktop-werk.
+>
+> `cluster-check` wacht zelf tot het `spark-demo`-profiel draait en zet de
+> kubectl-context erop (ook als je default-context `docker-desktop`/`rancher-desktop`
+> is). De `PULUMI_CONFIG_PASSPHRASE=""` wordt door Tilt zelf gezet — geen handmatige
+> export meer nodig voor `tilt up`.
 
 Wacht tot alle resources groen zijn in de Tilt-UI:
 
 | Resource | Wat |
 |---|---|
-| `cluster-check` | Sanity: minikube is de actieve context |
+| `cluster-check` | Sanity: profiel `spark-demo` draait en is de actieve context |
 | `uv-sync` | venv up-to-date |
 | `pulumi-stack` / `pulumi-up` | K8s-resources applied |
 | `pf-master-ui` | Port-forward 8080 → master web UI |
@@ -136,10 +141,31 @@ Per-directory README's: [pulumi/](pulumi/README.md), [spark/](spark/README.md), 
 ## Opruimen
 
 ```sh
-tilt down                              # stopt port-forwards
-cd pulumi && uv run pulumi destroy --yes
-minikube stop                          # of: minikube delete
+tilt down                                       # stopt port-forwards
+minikube update-context -p spark-demo           # PIN de kubectl-context op spark-demo
+cd pulumi && PULUMI_CONFIG_PASSPHRASE="" uv run pulumi destroy --yes
+minikube stop -p spark-demo                      # of: minikube delete -p spark-demo
 ```
+
+> **Let op — `minikube update-context -p spark-demo` is geen detail.** `pulumi
+> destroy` werkt tegen je *huidige* kubectl-context. Staat die op
+> `docker-desktop`/`rancher-desktop` (vaak de default), dan verwijdert destroy de
+> resources uit de **verkeerde** cluster als no-op, gooit ze uit de Pulumi-state, en
+> laten de échte pods verweesd achter — een latere `pulumi up`/`tilt up` botst dan op
+> bestaande namen.
+>
+> Verweesde boel toch te pakken? Pin de context en sloop de namespace direct:
+>
+> ```sh
+> minikube update-context -p spark-demo && kubectl delete namespace spark-demo
+> ```
+>
+> Voor een **clean restart** is het hele profiel weggooien het zekerst — dan kan er
+> niets verweesd achterblijven:
+>
+> ```sh
+> minikube delete -p spark-demo        # wist de hele spark-demo cluster
+> ```
 
 ## Resources & geheugen
 

@@ -2,34 +2,43 @@
 # Tilt orchestration voor het lokale Spark + Delta cluster.
 # Volgorde: cluster-check → uv sync → pulumi stack init → pulumi up → port-forwards → dbt smoke.
 
-allow_k8s_contexts('minikube')
+# This demo runs on its own minikube profile (a dedicated cluster) named
+# 'spark-demo', not the default 'minikube' profile. That keeps the cluster, its
+# kube-context, and the k8s namespace all under one 'spark-demo' name and fully
+# isolated from any other minikube/rancher-desktop work. The profile's
+# kube-context is also called 'spark-demo'.
+MINIKUBE_PROFILE = 'spark-demo'
+
+allow_k8s_contexts(MINIKUBE_PROFILE)
 
 # 00 — prereqs
-# Wait (bounded) for a running minikube and point kubectl at it. We never assert
-# on the *current* context: the host default is often docker-desktop/rancher-desktop,
-# and a one-shot assertion would wedge the whole pipeline (no auto-retry) the moment
-# the active context isn't minikube. Instead we wait for minikube to be Running, then
-# select it — self-healing if the user starts minikube alongside `tilt up`.
+# Wait (bounded) for the 'spark-demo' minikube profile to be running and point
+# kubectl at it. We never assert on the *current* context: the host default is
+# often docker-desktop/rancher-desktop, and a one-shot assertion would wedge the
+# whole pipeline (no auto-retry) the moment the active context isn't ours. Instead
+# we wait for the profile to be Running, then select it — self-healing if the user
+# starts minikube alongside `tilt up`.
 #
-# We use `minikube update-context` rather than `kubectl config use-context minikube`:
+# We use `minikube update-context` rather than `kubectl config use-context`:
 # Rancher Desktop actively manages ~/.kube/config and intermittently prunes the
 # minikube context it doesn't own, so the context may not exist when we need it.
-# `minikube update-context` re-injects minikube's entry and makes it current.
+# `minikube update-context -p spark-demo` re-injects the entry and makes it current.
 local_resource(
     'cluster-check',
     cmd="""
 set -eu
+P=spark-demo
 for i in $(seq 1 30); do
-  if minikube status --format '{{.Host}}' 2>/dev/null | grep -q Running; then
-    minikube update-context >/dev/null
+  if minikube status -p "$P" --format '{{.Host}}' 2>/dev/null | grep -q Running; then
+    minikube update-context -p "$P" >/dev/null
     kubectl get nodes >/dev/null
-    echo "cluster-check: minikube is Running and is the active kubectl context."
+    echo "cluster-check: minikube profile '$P' is Running and is the active kubectl context."
     exit 0
   fi
-  [ "$i" = 1 ] && echo "cluster-check: waiting for minikube — run 'minikube start' if you haven't…" >&2
+  [ "$i" = 1 ] && echo "cluster-check: waiting for minikube profile '$P' — run 'minikube start -p $P' if you haven't…" >&2
   sleep 2
 done
-echo "cluster-check: minikube not Running after 60s. Run 'minikube start' and re-trigger." >&2
+echo "cluster-check: minikube profile '$P' not Running after 60s. Run 'minikube start -p $P' and re-trigger." >&2
 exit 1
 """,
     labels=['00-prereqs'],
