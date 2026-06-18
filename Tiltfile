@@ -12,14 +12,16 @@ MINIKUBE_PROFILE = 'spark-demo'
 allow_k8s_contexts(MINIKUBE_PROFILE)
 
 # 00 — prereqs
-# Wait (bounded) for the 'spark-demo' minikube profile to be running and point
-# kubectl at it. We never assert on the *current* context: the host default is
-# often docker-desktop/rancher-desktop, and a one-shot assertion would wedge the
-# whole pipeline (no auto-retry) the moment the active context isn't ours. Instead
-# we wait for the profile to be Running, then select it — self-healing if the user
-# starts minikube alongside `tilt up`.
+# Ensure the 'spark-demo' minikube profile is running and is the active kube-context,
+# so `tilt up` alone spins everything up from nothing — no separate `minikube start`
+# step to remember. If the profile is missing or stopped, we start it here (idempotent:
+# a no-op when it's already Running, so re-runs are cheap). First creation pulls images
+# and can take a few minutes.
 #
-# We use `minikube update-context` rather than `kubectl config use-context`:
+# We never assert on the *current* context: the host default is often
+# docker-desktop/rancher-desktop, and a one-shot assertion would wedge the whole
+# pipeline (no auto-retry) the moment the active context isn't ours. And we select the
+# profile with `minikube update-context` rather than `kubectl config use-context`:
 # Rancher Desktop actively manages ~/.kube/config and intermittently prunes the
 # minikube context it doesn't own, so the context may not exist when we need it.
 # `minikube update-context -p spark-demo` re-injects the entry and makes it current.
@@ -28,18 +30,13 @@ local_resource(
     cmd="""
 set -eu
 P=spark-demo
-for i in $(seq 1 30); do
-  if minikube status -p "$P" --format '{{.Host}}' 2>/dev/null | grep -q Running; then
-    minikube update-context -p "$P" >/dev/null
-    kubectl get nodes >/dev/null
-    echo "cluster-check: minikube profile '$P' is Running and is the active kubectl context."
-    exit 0
-  fi
-  [ "$i" = 1 ] && echo "cluster-check: waiting for minikube profile '$P' — run 'minikube start -p $P' if you haven't…" >&2
-  sleep 2
-done
-echo "cluster-check: minikube profile '$P' not Running after 60s. Run 'minikube start -p $P' and re-trigger." >&2
-exit 1
+if ! minikube status -p "$P" --format '{{.Host}}' 2>/dev/null | grep -q Running; then
+  echo "cluster-check: minikube profile '$P' not running — starting it (first run pulls images, can take a few minutes)…"
+  minikube start -p "$P" --memory=5g --cpus=2
+fi
+minikube update-context -p "$P" >/dev/null
+kubectl get nodes >/dev/null
+echo "cluster-check: minikube profile '$P' is Running and is the active kubectl context."
 """,
     labels=['00-prereqs'],
 )
@@ -65,9 +62,14 @@ local_resource(
     labels=['10-infra'],
 )
 
+# --refresh reconciles Pulumi state with the live cluster before applying. Without
+# it, if the cluster was recreated (e.g. cluster-check made a fresh profile) while
+# the stack still tracks the old resources, `pulumi up` sees "no changes" and deploys
+# nothing — leaving an empty namespace. --refresh detects the resources are gone and
+# recreates them, so `tilt up` is self-correcting after any cluster rebuild.
 local_resource(
     'pulumi-up',
-    cmd=_PULUMI_ENV + ' && cd pulumi && uv run pulumi up --yes --skip-preview --stack dev --non-interactive',
+    cmd=_PULUMI_ENV + ' && cd pulumi && uv run pulumi up --yes --skip-preview --refresh --stack dev --non-interactive',
     deps=[
         'pulumi/__main__.py',
         'pulumi/Pulumi.yaml',

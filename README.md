@@ -65,8 +65,7 @@ cd pulumi && uv run pulumi stack init dev && cd ..
 ## Dagelijks gebruik
 
 ```sh
-minikube start -p spark-demo    # als hij nog niet draait
-tilt up                         # browser opent http://localhost:10350
+tilt up           # browser opent http://localhost:10350
 ```
 
 > Deze demo draait op een **eigen minikube-profiel** `spark-demo` (een aparte
@@ -74,16 +73,18 @@ tilt up                         # browser opent http://localhost:10350
 > kube-context én de namespace allemaal `spark-demo` en staat alles los van ander
 > minikube/rancher-desktop-werk.
 >
-> `cluster-check` wacht zelf tot het `spark-demo`-profiel draait en zet de
-> kubectl-context erop (ook als je default-context `docker-desktop`/`rancher-desktop`
-> is). De `PULUMI_CONFIG_PASSPHRASE=""` wordt door Tilt zelf gezet — geen handmatige
-> export meer nodig voor `tilt up`.
+> `tilt up` is genoeg: `cluster-check` **maakt/start het `spark-demo`-profiel zelf**
+> als het nog niet draait (eerste keer duurt dat een paar minuten — images pullen) en
+> zet de kubectl-context erop (ook als je default-context
+> `docker-desktop`/`rancher-desktop` is). De `PULUMI_CONFIG_PASSPHRASE=""` wordt door
+> Tilt zelf gezet — geen handmatige export meer nodig. Je hebt wél een draaiende
+> Docker-daemon (Rancher/Docker Desktop) nodig.
 
 Wacht tot alle resources groen zijn in de Tilt-UI:
 
 | Resource | Wat |
 |---|---|
-| `cluster-check` | Sanity: profiel `spark-demo` draait en is de actieve context |
+| `cluster-check` | Maakt/start profiel `spark-demo` indien nodig en zet het als actieve context |
 | `uv-sync` | venv up-to-date |
 | `pulumi-stack` / `pulumi-up` | K8s-resources applied |
 | `pf-master-ui` | Port-forward 8080 → master web UI |
