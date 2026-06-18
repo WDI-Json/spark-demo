@@ -3,6 +3,8 @@
 Lokaal Spark + Delta Lake-cluster, opgezet met **Pulumi** (IaC) en **Tilt** (orchestratie) op **minikube**, plus een mini **dbt**-project en een notebook via **Spark Connect**. Bedoeld om Databricks-concepten lokaal te oefenen.
 
 > Nieuw in deze stack? Begin bij [INTRODUCTION.md](INTRODUCTION.md) — een uitleg voor data engineers over wat dit project probeert te bereiken en hoe de stukjes in elkaar passen.
+>
+> Loopt er iets vast? Zie [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — symptoom → oorzaak → fix voor de bekende valkuilen (context, Docker-daemon, Pulumi-state).
 
 ## Wat dit wel/niet is
 
