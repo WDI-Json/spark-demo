@@ -239,6 +239,46 @@ state: zie de v2-sectie (Hive Metastore) in de README.
 
 ---
 
+## 12. Spark master-UI (`localhost:8080`) geeft "connection refused"
+
+**Symptoom** — De port-forward start, maar de UI laadt niet en de logs tonen:
+
+```
+kubectl port-forward -n spark-demo svc/spark-master 8080:8080
+Forwarding from 127.0.0.1:8080 -> 8080
+Handling connection for 8080
+E... an error occurred forwarding 8080 -> 8080: ... socat[...] E connect(..., AF=2 127.0.0.1:8080, 16): Connection refused
+error: lost connection to pod
+```
+
+De master-pod is `Running`, dus dit lijkt onlogisch.
+
+**Oorzaak** — `kubectl port-forward` verbindt met de **loopback** (`127.0.0.1`)
+binnen de pod. De standalone Spark-master bindt zijn web-UI (Jetty op 8080) echter
+op het adres uit `SPARK_LOCAL_IP` — en dat staat op het **pod-IP** (bewust, zodat
+RPC zijn pod-IP adverteert i.p.v. de pod-naam). De UI luistert dus op
+`10.244.x.x:8080`, niet op loopback, en de forward wordt geweigerd. Check het bind-
+adres:
+
+```sh
+kubectl exec -n spark-demo deploy/spark-master -- sh -c "ss -ltn | grep 8080"
+# fout:  10.244.x.x:8080   →  alleen pod-IP, port-forward faalt
+# goed:  :::8080           →  alle interfaces, port-forward werkt
+```
+
+**Fix** — Dit is opgelost in `pulumi/__main__.py`: de master draait met
+`SPARK_LOCAL_IP=0.0.0.0` (UI bindt op alle interfaces) en
+`SPARK_MASTER_HOST=$(POD_IP)` (RPC blijft het pod-IP adverteren) — hetzelfde
+patroon als `spark.connect.grpc.binding.host=0.0.0.0` voor Spark Connect. Zie je
+toch nog de oude binding: `git pull` en draai `tilt up` opnieuw zodat `pulumi-up`
+de master herstart.
+
+> **N.B.** Een stale kube-context geeft een *vergelijkbare* fout maar dan al bij
+> het verbinden met de API-server — los die eerst op (zie #4 en de sanity-check
+> bovenaan) voordat je naar de bind-config kijkt.
+
+---
+
 ## Handige diagnose-commando's
 
 ```sh

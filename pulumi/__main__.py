@@ -63,14 +63,22 @@ def make_deployment(
     env: dict[str, str] | None = None,
     ports: list[tuple[str, int]] | None = None,
     replicas: int = 1,
+    local_ip: str = "$(POD_IP)",
 ) -> Deployment:
     labels = {"app": name}
     # POD_IP wordt door K8s ingevuld; SPARK_LOCAL_IP zorgt dat Spark zijn pod-IP
     # adverteert i.p.v. de pod-naam (die anders via search-domain corporate-DNS
     # zou raken). Voor zowel master, worker, thrift als connect identiek.
+    #
+    # Uitzondering: de master zet local_ip="0.0.0.0" zodat de web-UI (Jetty op
+    # 8080) op alle interfaces bindt — anders bindt Spark de UI alleen op het
+    # pod-IP en weigert `kubectl port-forward` (loopback) de verbinding. De
+    # master adverteert zijn RPC-adres dan los via SPARK_MASTER_HOST=$(POD_IP),
+    # dus pod-IP-advertentie blijft intact. Zelfde patroon als Spark Connect
+    # (`spark.connect.grpc.binding.host=0.0.0.0`) in spark-defaults.conf.
     base_env: list[dict] = [
         {"name": "POD_IP", "value_from": {"field_ref": {"field_path": "status.podIP"}}},
-        {"name": "SPARK_LOCAL_IP", "value": "$(POD_IP)"},
+        {"name": "SPARK_LOCAL_IP", "value": local_ip},
     ]
     extra_env = [{"name": k, "value": v} for k, v in (env or {}).items()]
     container: dict = {
@@ -130,10 +138,14 @@ def _foreground(script: str, *args: str) -> list[str]:
 
 
 # Master
+# local_ip=0.0.0.0 bindt de web-UI op alle interfaces (port-forward werkt);
+# SPARK_MASTER_HOST=$(POD_IP) houdt de RPC-advertentie op het pod-IP.
 make_deployment(
     "spark-master",
     command=_foreground("start-master.sh"),
+    env={"SPARK_MASTER_HOST": "$(POD_IP)"},
     ports=[("rpc", 7077), ("ui", 8080)],
+    local_ip="0.0.0.0",
 )
 make_service("spark-master", [("rpc", 7077), ("ui", 8080)])
 
