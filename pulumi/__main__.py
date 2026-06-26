@@ -170,11 +170,15 @@ _DRIVER_HOST_FLAGS = (
 )
 
 # Thrift Server (dbt verbindt hier op 10000)
+# local[*] zodat executors in dezelfde pod draaien als de driver — bij een
+# cluster-master schrijven executors Parquet-bestanden naar de worker-pod's
+# /tmp, terwijl de driver _SUCCESS op zijn eigen /tmp zet; commit mislukt dan
+# stil en alle tabellen blijven leeg.
 make_deployment(
     "spark-thrift",
     command=_foreground(
         "start-thriftserver.sh",
-        f"--master {MASTER_URL}",
+        "--master local[*]",
         _DRIVER_HOST_FLAGS,
         f"--packages {DELTA_PKG}",
         "--name thrift-server",
