@@ -11,6 +11,9 @@ models:
       - name: customer_id
         tests:
           - not_null
+      - name: amount
+        tests:
+          - not_null
 
   - name: revenue_per_day
     description: "Daily revenue aggregation"
@@ -20,5 +23,16 @@ models:
           - unique
           - not_null
       - name: revenue
+        tests:
+          - not_null
+
+  - name: top_customers
+    description: "Customers with the highest revenue"
+    columns:
+      - name: customer_id
+        tests:
+          - unique
+          - not_null
+      - name: total_revenue
         tests:
           - not_null
