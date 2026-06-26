@@ -207,44 +207,13 @@ Then update `stg_orders.sql` to read from `{{ ref('raw_orders') }}` instead of `
 
 ---
 
-### Exercise 10 — Add a Delta table (Silver layer)
-
-**Goal:** Experience the difference between Parquet and Delta.
-
-Change `stg_orders.sql` to use Delta format:
-
-```sql
-{{ config(
-    materialized='table',
-    file_format='delta'
-) }}
-```
-
-After running, inspect the table directory inside the Spark pod:
-
-```sh
-kubectl exec -n spark-demo deploy/spark-thrift -- \
-  ls /tmp/spark-warehouse/stg_orders
-```
-
-You should see a `_delta_log/` directory alongside the Parquet files.
-
-**Reflection questions:**
-- What does the `_delta_log/` directory contain?
-- How does Delta Lake use this log for ACID transactions?
-- What does "time travel" mean, and how would you query a previous version?
-
-**Done when:** You can see the `_delta_log/` directory and explain what it contains.
-
----
-
 ## Apache Spark Exercises
 
-### Exercise 11 — Run your first PySpark query in the notebook
+### Exercise 10 — Run your first PySpark query in the notebook
 
 **Goal:** Get comfortable with the DataFrame API.
 
-Open `notebooks/01_hello_spark.ipynb`. After the first cell (which connects to Spark), add a new cell that:
+Open `notebooks/01_connect_spark.ipynb`. After the first cell (which connects to Spark), add a new cell that:
 
 1. Creates a DataFrame from a list of dictionaries (products with name and price).
 2. Filters for products with price > 50.
@@ -268,7 +237,7 @@ df.filter(df.price > 50).show()
 
 ---
 
-### Exercise 12 — Understand lazy evaluation
+### Exercise 11 — Understand lazy evaluation
 
 **Goal:** Observe that Spark doesn't do work until you force it.
 
@@ -293,7 +262,7 @@ Open the Spark UI at <http://localhost:8080> and look at the jobs tab while runn
 
 ---
 
-### Exercise 13 — Read a CSV with Spark and write as Parquet
+### Exercise 12 — Read a CSV with Spark and write as Parquet
 
 **Goal:** Practice the read/transform/write pattern that is at the heart of data engineering.
 
@@ -324,7 +293,7 @@ df2.printSchema()
 
 ---
 
-### Exercise 14 — Scale the cluster and observe parallelism
+### Exercise 13 — Scale the cluster and observe parallelism
 
 **Goal:** See Spark use multiple workers.
 
@@ -344,7 +313,7 @@ df2.printSchema()
 
 ## Data Quality & Best Practices
 
-### Exercise 15 — Add a freshness test (data recency)
+### Exercise 14 — Add a freshness test (data recency)
 
 **Goal:** Learn to detect stale data before it reaches your dashboards.
 
@@ -371,7 +340,7 @@ Run `dbt source freshness` and observe the output.
 
 ---
 
-### Exercise 16 — Break something intentionally and fix it
+### Exercise 15 — Break something intentionally and fix it
 
 **Goal:** Build resilience by experiencing failure modes first-hand.
 
@@ -388,7 +357,7 @@ Run `dbt source freshness` and observe the output.
 
 ---
 
-### Exercise 17 — Document your models with dbt docs
+### Exercise 16 — Document your models with dbt docs
 
 **Goal:** Practice the "data as a product" principle — good documentation is part of delivery.
 
@@ -404,7 +373,7 @@ Run `dbt source freshness` and observe the output.
 
 ---
 
-### Exercise 18 — Add row-count assertions between layers
+### Exercise 17 — Add row-count assertions between layers
 
 **Goal:** Practice data reconciliation — a core data engineering best practice.
 
@@ -423,7 +392,7 @@ where bronze_count != silver_count
 
 ## Infrastructure & IaC
 
-### Exercise 19 — Read and understand the Pulumi code
+### Exercise 18 — Read and understand the Pulumi code
 
 **Goal:** Demystify infrastructure-as-code.
 
@@ -438,7 +407,7 @@ Open `pulumi/__main__.py` and find the code that creates the Spark master Deploy
 
 ---
 
-### Exercise 20 — Add a ConfigMap entry and use it in Spark
+### Exercise 19 — Add a ConfigMap entry and use it in Spark
 
 **Goal:** Experience declarative configuration management.
 
@@ -459,7 +428,7 @@ Open `pulumi/__main__.py` and find the code that creates the Spark master Deploy
 
 These exercises go beyond the current repo setup and require a bit more exploration.
 
-### Exercise 21 — Add a Hive Metastore (shared catalog)
+### Exercise 20 — Add a Hive Metastore (shared catalog)
 
 **Goal:** Understand why notebooks can't see dbt tables today — and fix it.
 
@@ -474,7 +443,7 @@ Currently, Spark Connect and Spark Thrift have separate in-memory catalogs. Add 
 
 ---
 
-### Exercise 22 — Migrate your dbt project to Databricks Community Edition
+### Exercise 21 — Migrate your dbt project to Databricks Community Edition
 
 **Goal:** Confirm that the patterns you learned locally apply to the real platform.
 

@@ -30,7 +30,8 @@ In de praktijk werk je dus per omgeving:
 
 | Notebook | Wat |
 |---|---|
-| `01_hello_spark.ipynb` | Connect, `SHOW TABLES`, query op `revenue_per_day`, eigen `SUM` over `stg_orders`. |
+| `01_connect_spark.ipynb` | Connect, `SHOW TABLES`, query op `revenue_per_day`, eigen `SUM` over `stg_orders`. |
+| `02_thrift_spark.ipynb` | Thrift (PyHive op poort 10000), directe queries op dbt-tabellen voor debugging. |
 
 Voeg eigen notebooks toe — alles wat in Spark SQL of de PySpark DataFrame-API kan, werkt hier.
 
