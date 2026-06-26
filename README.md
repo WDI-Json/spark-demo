@@ -115,7 +115,7 @@ Verwacht resultaat: seed `PASS 1/1`, run `PASS 2/2`, test `PASS 6/6`. Tabellen `
 
 ### Notebook
 
-Open `notebooks/01_hello_spark.ipynb` in VS Code. De Jupyter-extensie pakt automatisch `.venv/` als kernel. De eerste cel verbindt via Spark Connect en print de Spark-versie.
+Open `notebooks/01_connect_spark.ipynb` in VS Code. De Jupyter-extensie pakt automatisch `.venv/` als kernel. De eerste cel verbindt via Spark Connect en print de Spark-versie.
 
 > **Let op:** Spark Connect en Spark Thrift draaien als gescheiden Spark-applicaties met elk een eigen in-memory catalog. Tabellen die `dbt-smoke` via Thrift maakt, zie je dus **niet** in de notebook. Voor gedeelde state heb je een Hive Metastore nodig (zie v2 hieronder). Het meegeleverde notebook is daarom self-contained.
 

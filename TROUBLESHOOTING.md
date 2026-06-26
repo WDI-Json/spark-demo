@@ -228,7 +228,7 @@ Thrift-pod is nog bezig met het downloaden van de Delta-packages bij het opstart
 ## 11. Notebook ziet de dbt-tabellen niet
 
 **Symptoom** — Tabellen die `dbt-smoke` via Thrift maakt (`orders`, `stg_orders`,
-`revenue_per_day`) zie je niet in `notebooks/01_hello_spark.ipynb`.
+`revenue_per_day`) zie je niet in `notebooks/01_connect_spark.ipynb`.
 
 **Oorzaak** — Dit is **by design**, geen bug. Spark Connect en Spark Thrift draaien
 als gescheiden Spark-applicaties met elk een eigen in-memory catalog. Zonder
