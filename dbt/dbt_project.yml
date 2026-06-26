@@ -1,8 +1,8 @@
-name: 'spark_demo'
-version: '1.0.0'
+name: "spark_demo"
+version: "1.0.0"
 config-version: 2
 
-profile: 'spark_demo'
+profile: "spark_demo"
 
 model-paths: ["models"]
 seed-paths: ["seeds"]
@@ -15,3 +15,7 @@ clean-targets:
 models:
   spark_demo:
     +materialized: table
+    silver:
+      +materialized: table
+    gold:
+      +materialized: table
